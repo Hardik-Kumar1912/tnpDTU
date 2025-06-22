@@ -26,6 +26,8 @@ export default function AdminPage() {
   const [mounted, setMounted] = useState(false);
   const [shareToken, setShareToken] = useState("");
   const [loading, setLoading] = useState(false);
+  const [expiry, setExpiry] = useState("");
+  const [note, setNote] = useState("");
 
   useEffect(() => {
     setMounted(true);
@@ -46,6 +48,23 @@ export default function AdminPage() {
     }
   };
 
+  const handleSaveSettings = () => {
+    if (!shareToken) {
+      toast.error("Generate a link first.");
+      return;
+    }
+
+    if (expiry) {
+      localStorage.setItem(`expiry_${shareToken}`, expiry);
+    }
+
+    if (note.trim()) {
+      localStorage.setItem(`note_${shareToken}`, note.trim());
+    }
+
+    toast.success("Settings saved successfully!");
+  };
+
   const fullLink = `${
     typeof window !== "undefined" ? window.location.origin : ""
   }/share/${shareToken}`;
@@ -61,9 +80,7 @@ export default function AdminPage() {
             <CardHeader>
               <CardTitle className="text-2xl">Welcome, Admin 👋</CardTitle>
               <CardDescription className="text-muted-foreground mt-2 text-base">
-                You&apos;re in the <strong>DTU T&amp;P Data Share Panel</strong>
-                . Use the section below to generate secure, shareable links for
-                external recruiters to view selected student data.
+                You&apos;re in the <strong>DTU T&amp;P Data Share Panel</strong>. Use the section below to generate secure, shareable links for external recruiters to view selected student data.
               </CardDescription>
             </CardHeader>
           </Card>
@@ -71,12 +88,9 @@ export default function AdminPage() {
           {/* Link Generation Section */}
           <Card className="w-full min-h-[240px] shadow-xl border rounded-2xl p-6">
             <CardHeader>
-              <CardTitle className="text-xl">
-                🔗 Generate Shareable Link
-              </CardTitle>
+              <CardTitle className="text-xl">🔗 Generate Shareable Link</CardTitle>
               <CardDescription className="text-muted-foreground mt-1 text-base">
-                This link allows external recruiters to view selected student
-                data in a read-only table. They do not need to log in.
+                This link allows external recruiters to view selected student data in a read-only table. They do not need to log in.
               </CardDescription>
             </CardHeader>
 
@@ -102,7 +116,8 @@ export default function AdminPage() {
               </div>
 
               {shareToken && (
-                <div className="bg-muted px-4 py-3 rounded border border-border space-y-3">
+                <div className="space-y-4 bg-muted px-4 py-4 rounded border border-border">
+                  {/* Shareable Link */}
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                     <span className="text-sm break-all">
                       🔗 <strong>Shareable Link:</strong>{" "}
@@ -131,7 +146,6 @@ export default function AdminPage() {
                         >
                           <Copy className="w-4 h-4 mr-2" /> Copy to Clipboard
                         </DropdownMenuItem>
-
                         <DropdownMenuItem
                           onClick={() => {
                             const url = encodeURIComponent(fullLink);
@@ -153,18 +167,11 @@ export default function AdminPage() {
                           />
                           Share via WhatsApp
                         </DropdownMenuItem>
-
                         <DropdownMenuItem
                           onClick={() => {
-                            const subject = encodeURIComponent(
-                              "DTU T&P Student Data"
-                            );
-                            const body = encodeURIComponent(
-                              `Hi,\n\nYou can access the data here: ${fullLink}`
-                            );
-                            window.open(
-                              `mailto:?subject=${subject}&body=${body}`
-                            );
+                            const subject = encodeURIComponent("DTU T&P Student Data");
+                            const body = encodeURIComponent(`Hi,\n\nYou can access the data here: ${fullLink}`);
+                            window.open(`mailto:?subject=${subject}&body=${body}`);
                           }}
                         >
                           <Image
@@ -178,6 +185,42 @@ export default function AdminPage() {
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
+                  </div>
+
+                  {/* Expiry Dropdown */}
+                  <div>
+                    <label className="text-sm font-medium">⏳ Link Expiry Time:</label>
+                    <select
+                      value={expiry}
+                      onChange={(e) => setExpiry(e.target.value)}
+                      className="w-full mt-1 p-2 rounded border border-border bg-background text-sm"
+                    >
+                      <option value="">Select Expiry Time</option>
+                      <option value="10m">10 Minutes</option>
+                      <option value="30m">30 Minutes</option>
+                      <option value="1h">1 Hour</option>
+                      <option value="3h">3 Hours</option>
+                      <option value="24h">24 Hours</option>
+                    </select>
+                  </div>
+
+                  {/* Note Input */}
+                  <div>
+                    <label className="text-sm font-medium">📝 Add Note (Visible to Recruiter):</label>
+                    <textarea
+                      rows="2"
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                      className="w-full mt-1 p-2 rounded border border-border bg-background text-sm"
+                      placeholder="Example: This list includes top shortlisted students only."
+                    />
+                  </div>
+
+                  {/* Save Settings Button */}
+                  <div className="text-right">
+                    <Button onClick={handleSaveSettings} className="bg-primary text-white hover:bg-primary/90">
+                      Save Settings
+                    </Button>
                   </div>
                 </div>
               )}

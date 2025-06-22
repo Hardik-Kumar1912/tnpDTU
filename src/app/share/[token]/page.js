@@ -33,17 +33,34 @@ export default function SharePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [note, setNote] = useState("");
+  const [expired, setExpired] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const expiryRaw = localStorage.getItem(`expiry_${token}`);
+        const createdAt = localStorage.getItem(`createdAt_${token}`);
+        if (expiryRaw && createdAt) {
+          const expiryMs = parseExpiryToMs(expiryRaw);
+          const expiryTime = parseInt(createdAt) + expiryMs;
+          if (Date.now() > expiryTime) {
+            setExpired(true);
+            return;
+          }
+        }
+
         const res = await fetch(
           `https://tnp-recruitment-challenge.manitvig.live/share?shareToken=${token}`
         );
         if (!res.ok) throw new Error("Invalid or expired share token");
+
         const data = await res.json();
         setStudents(data);
         setFiltered(data);
+
+        const savedNote = localStorage.getItem(`note_${token}`);
+        if (savedNote) setNote(savedNote);
       } catch (err) {
         setError(err.message || "Something went wrong");
       } finally {
@@ -60,6 +77,15 @@ export default function SharePage() {
     );
     setFiltered(filteredData);
   }, [searchTerm, students]);
+
+  const parseExpiryToMs = (expiry) => {
+    const unit = expiry.slice(-1);
+    const value = parseInt(expiry.slice(0, -1));
+    if (unit === "m") return value * 60 * 1000;
+    if (unit === "h") return value * 60 * 60 * 1000;
+    if (unit === "d") return value * 24 * 60 * 60 * 1000;
+    return 0;
+  };
 
   const downloadExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(filtered);
@@ -86,14 +112,14 @@ export default function SharePage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      
       <Navbar2 />
 
-      {/* Main Content */}
       <main className="flex-grow px-4 py-10 bg-muted flex justify-center items-start">
         <Card className="w-full max-w-6xl shadow-lg">
           <CardHeader>
-            <CardTitle className="text-2xl text-center">Shared Student Data</CardTitle>
+            <CardTitle className="text-2xl text-center">
+              Shared Student Data
+            </CardTitle>
             <CardDescription className="text-center text-muted-foreground mt-2">
               This is a secure, read-only list of selected DTU students, shared
               by the DTU Training and Placement Cell for recruitment purposes.
@@ -104,12 +130,24 @@ export default function SharePage() {
             {loading ? (
               <div className="text-center py-8">
                 <Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" />
-                <p className="mt-2 text-sm text-muted-foreground">Loading data...</p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Loading data...
+                </p>
               </div>
+            ) : expired ? (
+              <p className="text-red-600 text-center font-medium">
+                This link has expired. Please contact the admin for a new one.
+              </p>
             ) : error ? (
               <p className="text-red-600 text-center font-medium">{error}</p>
             ) : (
               <>
+                {note && (
+                  <div className="bg-yellow-100 text-yellow-800 border border-yellow-300 rounded p-3 text-sm">
+                    <strong>Note from Admin:</strong> {note}
+                  </div>
+                )}
+
                 <div className="flex flex-wrap gap-4 justify-between items-center">
                   <Input
                     type="text"
@@ -150,7 +188,10 @@ export default function SharePage() {
                         ))
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={3} className="text-center text-muted-foreground">
+                          <TableCell
+                            colSpan={3}
+                            className="text-center text-muted-foreground"
+                          >
                             No students found matching this email.
                           </TableCell>
                         </TableRow>

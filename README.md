@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# DTU TnP Data Share App
 
-## Getting Started
+This is my submission for the **DTU Training and Placement Department Development Team Recruitment Challenge 2025**. The app enables the admin to generate secure, shareable links that allow external recruiters to view selected student data — no login required on their end.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🚀 Features Implemented
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 1. Admin Login  
+- Clean and responsive login page built with **Next.js** and **Tailwind CSS**  
+- Real-time feedback using **Sonner** toast notifications  
+- DTU branding with logo and consistent theme  
+- On successful login, tokens are stored in cookies  
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+### 2. Protected Admin Panel  
+- Home page (`/`) functions as the admin panel  
+- Authenticated using a **Next.js middleware** that checks for an access token cookie  
+- Admins can generate a **secure shareable link** using the provided backend API  
+- The generated link includes:
+  - Copy to Clipboard  
+  - Share via WhatsApp  
+  - Share via Email  
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Public Share Page  
+- The `/share/[token]` route publicly renders a read-only table  
+- Fetches student data using the token from the URL  
+- Includes a built-in **email search filter** to quickly look up students  
 
-## Learn More
+### 4. UI & UX  
+- Fully responsive across screen sizes  
+- Clean layout using **ShadCN** components  
+- Consistent theme, smooth interactions, and well-organized code structure  
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🧠 Technical Notes
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Originally, the backend API used `Access-Control-Allow-Origin: *`, which made using `credentials: "include"` (for secure cookie-based auth) **impossible** due to CORS restrictions.
 
-## Deploy on Vercel
+### ✅ Final Approach  
+To overcome this, we:
+- Handled **token storage via client-side cookies** (not `httpOnly`)
+- Used a **Next.js `middleware.js`** to protect the admin panel by checking the `accessToken` cookie
+- Performed manual cookie parsing on the client when needed
+- Implemented token refresh flow using the refresh token cookie
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+This approach allowed route protection without relying on `localStorage`, while staying within the boundaries of what browsers and the provided backend allow.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 🛠️ Tech Stack
+
+| Feature              | Tech                       |
+|----------------------|----------------------------|
+| Framework            | Next.js (App Router)       |
+| Styling              | Tailwind CSS, ShadCN       |
+| Icons                | Lucide-react               |
+| Notifications        | Sonner                     |
+| Auth                 | Cookie-based (client-managed) |
+| Routing Protection   | `middleware.js`            |
+
+---
+
+Thanks to the **DTU T&P Dev Team** for this engaging challenge!

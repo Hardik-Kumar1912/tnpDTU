@@ -1,103 +1,192 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Image from "next/image";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import { Share2, Copy } from "lucide-react";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
+import { generateShareToken } from "@/lib/api";
+import { toast } from "sonner";
 
-export default function Home() {
+export default function AdminPage() {
+  const [mounted, setMounted] = useState(false);
+  const [shareToken, setShareToken] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  const handleGenerateShareLink = async () => {
+    setLoading(true);
+    const result = await generateShareToken();
+    setLoading(false);
+
+    if (result.success) {
+      setShareToken(result.shareToken);
+      toast.success("Link generated successfully!");
+    } else {
+      alert(result.message);
+    }
+  };
+
+  const fullLink = `${
+    typeof window !== "undefined" ? window.location.origin : ""
+  }/share/${shareToken}`;
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      <main className="flex-grow flex items-center justify-center px-4 py-10 bg-muted">
+        <div className="w-full max-w-3xl space-y-10">
+          {/* Welcome Section */}
+          <Card className="w-full min-h-[180px] bg-card shadow-xl border rounded-2xl p-6">
+            <CardHeader>
+              <CardTitle className="text-2xl">Welcome, Admin 👋</CardTitle>
+              <CardDescription className="text-muted-foreground mt-2 text-base">
+                You&apos;re in the <strong>DTU T&amp;P Data Share Panel</strong>
+                . Use the section below to generate secure, shareable links for
+                external recruiters to view selected student data.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          {/* Link Generation Section */}
+          <Card className="w-full min-h-[240px] shadow-xl border rounded-2xl p-6">
+            <CardHeader>
+              <CardTitle className="text-xl">
+                🔗 Generate Shareable Link
+              </CardTitle>
+              <CardDescription className="text-muted-foreground mt-1 text-base">
+                This link allows external recruiters to view selected student
+                data in a read-only table. They do not need to log in.
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent className="space-y-6">
+              <div className="flex items-center gap-4">
+                <Button
+                  onClick={handleGenerateShareLink}
+                  disabled={loading || !!shareToken}
+                  className="bg-primary text-white hover:bg-primary/90"
+                >
+                  {loading
+                    ? "Generating..."
+                    : shareToken
+                    ? "Link Generated"
+                    : "Generate Share Link"}
+                </Button>
+
+                {shareToken && (
+                  <span className="text-green-600 text-sm font-medium">
+                    ✔️ Link generated successfully
+                  </span>
+                )}
+              </div>
+
+              {shareToken && (
+                <div className="bg-muted px-4 py-3 rounded border border-border space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <span className="text-sm break-all">
+                      🔗 <strong>Shareable Link:</strong>{" "}
+                      <a
+                        href={fullLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 underline"
+                      >
+                        {fullLink}
+                      </a>
+                    </span>
+
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <Share2 className="w-4 h-4 mr-1" /> Share
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-48">
+                        <DropdownMenuItem
+                          onClick={() => {
+                            navigator.clipboard.writeText(fullLink);
+                            toast("Copied to clipboard");
+                          }}
+                        >
+                          <Copy className="w-4 h-4 mr-2" /> Copy to Clipboard
+                        </DropdownMenuItem>
+
+                        <DropdownMenuItem
+                          onClick={() => {
+                            const url = encodeURIComponent(fullLink);
+                            const text = encodeURIComponent(
+                              "Check out this DTU T&P data:"
+                            );
+                            window.open(
+                              `https://wa.me/?text=${text}%20${url}`,
+                              "_blank"
+                            );
+                          }}
+                        >
+                          <Image
+                            src="/whatsapp.png"
+                            alt="WhatsApp"
+                            width={18}
+                            height={18}
+                            className="mr-2"
+                          />
+                          Share via WhatsApp
+                        </DropdownMenuItem>
+
+                        <DropdownMenuItem
+                          onClick={() => {
+                            const subject = encodeURIComponent(
+                              "DTU T&P Student Data"
+                            );
+                            const body = encodeURIComponent(
+                              `Hi,\n\nYou can access the data here: ${fullLink}`
+                            );
+                            window.open(
+                              `mailto:?subject=${subject}&body=${body}`
+                            );
+                          }}
+                        >
+                          <Image
+                            src="/gmail.png"
+                            alt="Mail"
+                            width={18}
+                            height={18}
+                            className="mr-2"
+                          />
+                          Share via Email
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+      <Footer />
     </div>
   );
 }

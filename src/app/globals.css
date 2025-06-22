@@ -1,8 +1,11 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@custom-variant dark (&:is(.dark *));
+
+/* Fix for Leaflet marker icons not showing */
+.leaflet-container {
+  z-index: 0;
 }
 
 @theme inline {
@@ -10,17 +13,176 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-destructive: var(--destructive);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  --radius: 0.625rem;
+
+  /* Base theme colors */
+  --green-sky-light: #e0f7e9;
+  --green-sky: #a8e6cf;
+  --green-base: #66bb6a;
+  --blue-sky: #b2ebf2;
+  --blue-light: #81d4fa;
+  --blue-dark: #0288d1;
+  --text-dark: #1a2e30;
+
+  /* Core Colors */
+  --background: #f0fdf4;
+  --foreground: #1a2e30;
+
+  --primary: var(--green-base);
+  --primary-foreground: white;
+
+  --secondary: var(--blue-sky);
+  --secondary-foreground: #0d3b3b;
+
+  --accent: var(--blue-light);
+  --accent-foreground: #004d40;
+
+  --muted: #e3f2fd;
+  --muted-foreground: #607d8b;
+
+  --border: rgba(102, 187, 106, 0.4);
+  --input: rgba(102, 187, 106, 0.15);
+  --ring: var(--blue-dark);
+  --destructive: #e57373;
+
+  --card: white;
+  --card-foreground: var(--text-dark);
+  --popover: white;
+  --popover-foreground: var(--text-dark);
+}
+
+.dark {
+  --background: #0d1b1e;
+  --foreground: #e0f7e9;
+
+  --card: #10292d;
+  --card-foreground: #e0f7e9;
+  --popover: #10292d;
+  --popover-foreground: #e0f7e9;
+
+  --primary: #81c784;
+  --primary-foreground: #0d1b1e;
+
+  --secondary: #4dd0e1;
+  --secondary-foreground: #0d1b1e;
+
+  --accent: #29b6f6;
+  --accent-foreground: #0d1b1e;
+
+  --muted: #1b2e33;
+  --muted-foreground: #a7c2c5;
+
+  --border: rgba(129, 199, 132, 0.3);
+  --input: rgba(129, 199, 132, 0.15);
+  --ring: #26c6da;
+
+  --destructive: #ef5350;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes scanline {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 0 100%;
+  }
+}
+
+@keyframes slow-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-scanline {
+  animation: scanline 8s linear infinite;
+}
+
+.animate-slow-spin {
+  animation: slow-spin 12s linear infinite;
+}
+
+@keyframes sound-wave {
+  0% {
+    height: 10%;
+  }
+  50% {
+    height: 100%;
+  }
+  100% {
+    height: 10%;
+  }
+}
+
+.animate-sound-wave {
+  animation: sound-wave 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse-slow {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.05);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 6s ease-in-out infinite;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-in-out forwards;
 }

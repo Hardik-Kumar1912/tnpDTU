@@ -21,6 +21,8 @@ import {
 } from "@/components/ui/card";
 import { generateShareToken } from "@/lib/api";
 import { toast } from "sonner";
+import { QRCode } from "react-qr-code";
+
 
 export default function AdminPage() {
   const [mounted, setMounted] = useState(false);
@@ -221,6 +223,14 @@ export default function AdminPage() {
                     <Button onClick={handleSaveSettings} className="bg-primary text-white hover:bg-primary/90">
                       Save Settings
                     </Button>
+                  </div>
+
+                  {/* QR Code */}
+                  <div>
+                    <label className="text-sm font-medium"> QR Code (Scan to Open):</label>
+                    <div className="bg-white p-4 rounded w-fit mt-2 border">
+                      <QRCode value={fullLink} size={128} />
+                    </div>
                   </div>
                 </div>
               )}

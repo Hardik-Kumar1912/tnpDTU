@@ -5,6 +5,8 @@ import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import { toPng } from "html-to-image";
+import { Download, Share } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,7 +24,6 @@ import {
 import { generateShareToken } from "@/lib/api";
 import { toast } from "sonner";
 import { QRCode } from "react-qr-code";
-
 
 export default function AdminPage() {
   const [mounted, setMounted] = useState(false);
@@ -82,7 +83,9 @@ export default function AdminPage() {
             <CardHeader>
               <CardTitle className="text-2xl">Welcome, Admin 👋</CardTitle>
               <CardDescription className="text-muted-foreground mt-2 text-base">
-                You&apos;re in the <strong>DTU T&amp;P Data Share Panel</strong>. Use the section below to generate secure, shareable links for external recruiters to view selected student data.
+                You&apos;re in the <strong>DTU T&amp;P Data Share Panel</strong>
+                . Use the section below to generate secure, shareable links for
+                external recruiters to view selected student data.
               </CardDescription>
             </CardHeader>
           </Card>
@@ -90,9 +93,12 @@ export default function AdminPage() {
           {/* Link Generation Section */}
           <Card className="w-full min-h-[240px] shadow-xl border rounded-2xl p-6">
             <CardHeader>
-              <CardTitle className="text-xl">🔗 Generate Shareable Link</CardTitle>
+              <CardTitle className="text-xl">
+                🔗 Generate Shareable Link
+              </CardTitle>
               <CardDescription className="text-muted-foreground mt-1 text-base">
-                This link allows external recruiters to view selected student data in a read-only table. They do not need to log in.
+                This link allows external recruiters to view selected student
+                data in a read-only table. They do not need to log in.
               </CardDescription>
             </CardHeader>
 
@@ -171,9 +177,15 @@ export default function AdminPage() {
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => {
-                            const subject = encodeURIComponent("DTU T&P Student Data");
-                            const body = encodeURIComponent(`Hi,\n\nYou can access the data here: ${fullLink}`);
-                            window.open(`mailto:?subject=${subject}&body=${body}`);
+                            const subject = encodeURIComponent(
+                              "DTU T&P Student Data"
+                            );
+                            const body = encodeURIComponent(
+                              `Hi,\n\nYou can access the data here: ${fullLink}`
+                            );
+                            window.open(
+                              `mailto:?subject=${subject}&body=${body}`
+                            );
                           }}
                         >
                           <Image
@@ -191,7 +203,9 @@ export default function AdminPage() {
 
                   {/* Expiry Dropdown */}
                   <div>
-                    <label className="text-sm font-medium">⏳ Link Expiry Time:</label>
+                    <label className="text-sm font-medium">
+                      Link Expiry Time:
+                    </label>
                     <select
                       value={expiry}
                       onChange={(e) => setExpiry(e.target.value)}
@@ -208,7 +222,9 @@ export default function AdminPage() {
 
                   {/* Note Input */}
                   <div>
-                    <label className="text-sm font-medium">📝 Add Note (Visible to Recruiter):</label>
+                    <label className="text-sm font-medium">
+                      Add Note (Visible to Recruiter):
+                    </label>
                     <textarea
                       rows="2"
                       value={note}
@@ -220,16 +236,91 @@ export default function AdminPage() {
 
                   {/* Save Settings Button */}
                   <div className="text-right">
-                    <Button onClick={handleSaveSettings} className="bg-primary text-white hover:bg-primary/90">
+                    <Button
+                      onClick={handleSaveSettings}
+                      className="bg-primary text-white hover:bg-primary/90"
+                    >
                       Save Settings
                     </Button>
                   </div>
 
-                  {/* QR Code */}
+                  {/* QR Code Section */}
                   <div>
-                    <label className="text-sm font-medium"> QR Code (Scan to Open):</label>
-                    <div className="bg-white p-4 rounded w-fit mt-2 border">
+                    <label className="text-sm font-medium">
+                      QR Code (Scan to Open):
+                    </label>
+                    <div
+                      className="bg-white p-4 rounded w-fit mt-2 border"
+                      id="qr-code"
+                    >
                       <QRCode value={fullLink} size={128} />
+                    </div>
+
+                    {/* QR Actions */}
+                    <div className="flex gap-2 mt-3">
+                      {/* Download QR Button */}
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          const qrNode = document.getElementById("qr-code");
+                          if (!qrNode) return;
+
+                          toPng(qrNode)
+                            .then((dataUrl) => {
+                              const link = document.createElement("a");
+                              link.download = "qr-code.png";
+                              link.href = dataUrl;
+                              link.click();
+                            })
+                            .catch(() =>
+                              toast.error("Failed to download QR code")
+                            );
+                        }}
+                      >
+                        <Download className="w-4 h-4 mr-1" /> Download QR
+                      </Button>
+
+                      {/* Share QR via WhatsApp */}
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          const qrNode = document.getElementById("qr-code");
+                          if (!qrNode) return;
+
+                          toPng(qrNode)
+                            .then((dataUrl) => {
+                              const imageBlob = fetch(dataUrl).then((res) =>
+                                res.blob()
+                              );
+                              const text = `Scan this QR or open link: ${fullLink}`;
+                              const url = `https://wa.me/?text=${encodeURIComponent(
+                                text
+                              )}`;
+                              window.open(url, "_blank");
+                            })
+                            .catch(() =>
+                              toast.error("Failed to generate QR for WhatsApp")
+                            );
+                        }}
+                      >
+                        <Share className="w-4 h-4 mr-1" /> Share via WhatsApp
+                      </Button>
+
+                      {/* Share QR via Email */}
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          const subject = "DTU T&P Data - QR Access";
+                          const body = `Hi,\n\nScan the attached QR code or use the link below to access the student data:\n\n${fullLink}`;
+                          window.open(
+                            `mailto:?subject=${encodeURIComponent(
+                              subject
+                            )}&body=${encodeURIComponent(body)}`
+                          );
+                        }}
+                      >
+                        <Share className="w-4 h-4 mr-1" /> Share via Email
+                      </Button>
                     </div>
                   </div>
                 </div>

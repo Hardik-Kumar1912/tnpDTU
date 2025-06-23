@@ -245,7 +245,7 @@ export default function AdminPage() {
                   </div>
 
                   {/* QR Code Section */}
-                  <div>
+                  <div className="flex flex-col items-center mt-8">
                     <label className="text-sm font-medium">
                       QR Code (Scan to Open):
                     </label>
@@ -280,47 +280,6 @@ export default function AdminPage() {
                         <Download className="w-4 h-4 mr-1" /> Download QR
                       </Button>
 
-                      {/* Share QR via WhatsApp */}
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          const qrNode = document.getElementById("qr-code");
-                          if (!qrNode) return;
-
-                          toPng(qrNode)
-                            .then((dataUrl) => {
-                              const imageBlob = fetch(dataUrl).then((res) =>
-                                res.blob()
-                              );
-                              const text = `Scan this QR or open link: ${fullLink}`;
-                              const url = `https://wa.me/?text=${encodeURIComponent(
-                                text
-                              )}`;
-                              window.open(url, "_blank");
-                            })
-                            .catch(() =>
-                              toast.error("Failed to generate QR for WhatsApp")
-                            );
-                        }}
-                      >
-                        <Share className="w-4 h-4 mr-1" /> Share via WhatsApp
-                      </Button>
-
-                      {/* Share QR via Email */}
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          const subject = "DTU T&P Data - QR Access";
-                          const body = `Hi,\n\nScan the attached QR code or use the link below to access the student data:\n\n${fullLink}`;
-                          window.open(
-                            `mailto:?subject=${encodeURIComponent(
-                              subject
-                            )}&body=${encodeURIComponent(body)}`
-                          );
-                        }}
-                      >
-                        <Share className="w-4 h-4 mr-1" /> Share via Email
-                      </Button>
                     </div>
                   </div>
                 </div>

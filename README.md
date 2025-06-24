@@ -44,10 +44,6 @@ This is my submission for the **DTU Training and Placement Department Developmen
 
 ---
 
-## 🧠 Technical Notes
-
-Originally, the backend API used `Access-Control-Allow-Origin: *`, which made using `credentials: "include"` (for secure cookie-based auth) **impossible** due to CORS restrictions.
-
 ### ✅ Final Approach  
 To overcome this, we:
 - Handled **token storage via client-side cookies** (not `httpOnly`)  
